@@ -39,6 +39,9 @@ const Signup = async (req, res, next) => {
   } catch (error) {
     return next(res.status(201).json({ error: error.message }));
   }
+
+  // to compare password
+  // bcrypt.compare(password, existingUser.password); 
 };
 
 module.exports = {
