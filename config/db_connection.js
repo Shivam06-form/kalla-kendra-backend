@@ -1,6 +1,7 @@
 //Import mongoose library
 const mongoose = require("mongoose");
 
+// connect with database
 const connectDB = () => {
   mongoose
     .connect(process.env.DB_URI, { useNewUrlParser: true })

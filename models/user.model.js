@@ -1,9 +1,10 @@
-
 const mongoose = require("mongoose");
+
 // currently no use
 const crypto = require("crypto");
 const validator = require("validator");
 
+// user Schema
 const user = new mongoose.Schema({
   Name: {
     type: String,
@@ -26,4 +27,5 @@ const user = new mongoose.Schema({
 
 const User = mongoose.model("User", user);
 
+// exports module
 module.exports = User;

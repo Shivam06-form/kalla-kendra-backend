@@ -1,9 +1,10 @@
+// require
 const path = require("path");
 const Resume = require("../models/resume.model");
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 
-
+// get database
 const getUsers = (req, res) => {
   res.send("server is running");
 };
@@ -17,6 +18,7 @@ const saveResume = async (req, res) => {
   res.json(resume);
 };
 
+// save user data
 const Signup = async (req, res, next) => {
   const { Name, email, password } = req.body;
 
@@ -24,9 +26,7 @@ const Signup = async (req, res, next) => {
   try {
     hashedPassword = await bcrypt.hash(password, 12);
   } catch (error) {
-    return next(
-      res.status(500).json({ error: error.message })
-    );
+    return next(res.status(500).json({ error: error.message }));
   }
 
   try {
@@ -35,13 +35,14 @@ const Signup = async (req, res, next) => {
       email,
       password: hashedPassword,
     });
-    return next(res.status(202).json(newUser));
+    const user = await newUser.save();
+    return next(res.status(202).json(user));
   } catch (error) {
     return next(res.status(201).json({ error: error.message }));
   }
 
   // to compare password
-  // bcrypt.compare(password, existingUser.password); 
+  // bcrypt.compare(password, existingUser.password);
 };
 
 module.exports = {
