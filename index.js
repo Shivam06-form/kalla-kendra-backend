@@ -1,8 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const userRouter = require("./routs/users.route");
+const { connectDB } = require("./config/db_connection");
 const PORT = process.env.PORT || 5000;
 const app = express();
+
+connectDB();
 
 // use middleware
 app.use(cors());
