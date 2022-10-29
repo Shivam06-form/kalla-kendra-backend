@@ -1,6 +1,4 @@
 const mongoose = require("mongoose");
-
-// resume Schema
 const resume = mongoose.Schema({
   firstName: {
     type: String,
@@ -74,5 +72,4 @@ const resume = mongoose.Schema({
   },
 });
 
-// exports module
 module.exports = mongoose.model("Resume", resume);
