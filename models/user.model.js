@@ -1,13 +1,16 @@
-
 const mongoose = require("mongoose");
 // currently no use
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const validator = require("validator");
 
 const user = new mongoose.Schema({
   Name: {
     type: String,
     required: [true, "Please tell us your name!"],
+    unique: true,
+    minlength: 8,
+    // validate: [validator, "Please provide a valid name"],
   },
   email: {
     type: String,
@@ -20,10 +23,16 @@ const user = new mongoose.Schema({
     type: String,
     require: [true, "Please provide your password"],
     minlength: 8,
-    select: false,
+    select: true,
   },
 });
 
-const User = mongoose.model("User", user);
+user.pre("save", async function (next) {
+  // Hash the password with cost of
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+const User = mongoose.model("users", user);
 
 module.exports = User;

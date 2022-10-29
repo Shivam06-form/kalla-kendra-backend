@@ -2,10 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const userRouter = require("./routs/users.route");
 const { connectDB } = require("./config/db_connection");
+const { ErrorHandler } = require("./middleware/ErrorHander");
 const PORT = process.env.PORT || 5000;
 const app = express();
-
-connectDB();
 
 // use middleware
 app.use(cors());
@@ -18,6 +17,24 @@ app.use(userRouter);
 //     message: "resource not found",
 //   });
 // });
+
+// For Handling All Errors
+app.use("*", (req, res, next) => {
+  return next(ErrorHandler(`Cannot GET ${req.originalUrl}`, "fail", 500));
+});
+
+// For Handling Error's
+app.use((err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || "error";
+
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+  });
+});
+
+connectDB();
 
 app.listen(PORT, () => {
   console.log(`server is running http://localhost:${PORT}`);
