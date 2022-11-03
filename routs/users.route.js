@@ -7,6 +7,7 @@ const {
   saveResume,
   Signup,
   Login,
+  ForgetPassword,
 } = require("../controllers/users.controller");
 const router = express.Router();
 
@@ -17,5 +18,7 @@ router.post("/resume", saveResume);
 router.post("/Signup", Signup);
 
 router.post("/Login", Login);
+
+router.patch("/ForgetPassword", ForgetPassword);
 
 module.exports = router;
