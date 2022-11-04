@@ -34,13 +34,6 @@ const saveResume = async (req, res) => {
 const Signup = async (req, res, next) => {
   const { Name, email, password } = req.body;
 
-  // let hashedPassword;
-  // try {
-  //   hashedPassword = await bcrypt.hash(password, 12);
-  // } catch (error) {
-  //   return next(ErrorHandler(error.message, "error", 500));
-  // }
-
   let existingUser;
   try {
     existingUser = await User.findOne({ Name: Name });
@@ -101,7 +94,7 @@ const Login = async (req, res, next) => {
   try {
     user = await User.findOne({ email: email });
   } catch (error) {
-    console.log(error.message);
+    return next(ErrorHandler(error.message, "error", 403));
   }
 
   if (!user) {
@@ -112,7 +105,7 @@ const Login = async (req, res, next) => {
   let isValidPassword;
 
   try {
-    isValidPassword = await bcrypt.compare(password, user.password);
+    isValidPassword = bcrypt.compare(password, user.password);
   } catch (error) {
     return next(
       ErrorHandler("Invalid credentails , could not log you in", "error", 403)
@@ -127,9 +120,37 @@ const Login = async (req, res, next) => {
   res.status(200).json({ user });
 };
 
+const ForgetPassword = async (req, res, next) => {
+  const { email, password } = req.body;
+  let user;
+  try {
+    user = await User.findOne({ email: email });
+  } catch (error) {
+    return next(ErrorHandler(error.message, "error", 403));
+  }
+
+  if (!user) {
+    return next(ErrorHandler("Cannot Find The E-Mail Id", "error", 403));
+  }
+
+  let UpdatedUser;
+  try {
+    const filter = { email: email };
+    const update = { password: password };
+    UpdatedUser = await User.findOneAndUpdate(filter, update);
+    console.log(UpdatedUser);
+    UpdatedUser.save();
+  } catch (error) {
+    return next(ErrorHandler(error.message, "error", 403));
+  }
+
+  res.status(200).json({ UpdatedUser, message: "User Updated Successful" });
+};
+
 module.exports = {
   saveResume,
   getUsers,
   Signup,
   Login,
+  ForgetPassword,
 };
