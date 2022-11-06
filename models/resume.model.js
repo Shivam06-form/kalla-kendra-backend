@@ -70,6 +70,11 @@ const resume = mongoose.Schema({
     trim: true,
     required: [true, "Year of experience must be filled up"],
   },
+  uploadImage: {
+    type: String,
+    default: "default.png",
+    trim: true,
+  },
 });
 
 module.exports = mongoose.model("Resume", resume);

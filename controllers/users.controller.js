@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const { ErrorHandler } = require("../middleware/ErrorHander");
 const { isValidObjectId } = require("mongoose");
 
+// get users
 const getUsers = async (req, res, next) => {
   let users;
 
@@ -18,18 +19,82 @@ const getUsers = async (req, res, next) => {
   }
   res.json({
     users: users.map((user) => user.toObject({ getters: true })),
-    message: "API wroking fine",
+    message: "API working fine",
   });
+};
+
+// get resume
+const getResume = async (req, res, next) => {
+  console.log(req.params);
+
+  try {
+    const resume = await Resume.findById(req.params.id);
+
+    if (!resume) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
+    res.status(200).json({ data: resume });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 // post resume
 const saveResume = async (req, res) => {
-  const resume = await Resume.create({
-    ...req.body,
-  });
+  try {
+    const resume = await Resume.create(req.body);
+    res.status(200).json({ data: resume });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 
   res.json(resume);
 };
+
+// file system for image
+const uploadPic = async (req, res, next) => {
+  try {
+    const resume = await Resume.findById(req.params.id);
+    if (!resume) {
+      return res.status(402).json({ message: "Resource not found" });
+    }
+    const uploadImage = req.files.uploadImage;
+    // validate Image
+    const fileSize = uploadImage.size / 1000;
+    const fileExt = uploadImage.name.split(".")[1];
+    if (fileSize > 5000) {
+      return res
+        .status(400)
+        .json({ message: "file size must be lower than 5000kb" });
+    }
+
+    if (!["jpg", "png"].includes(fileExt)) {
+      return res
+        .status(400)
+        .json({ message: "file extensions must be jpg or png" });
+    }
+    const fileName = `${req.params.id}${path.extname(uploadImage.name)}`;
+    uploadImage.mv(`uploads/${fileName}`, async (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send(err);
+      }
+      // update resume image field
+      await Resume.findByIdAndUpdate(req.params.id, { uploadImage: fileName });
+      res.status(200).json({
+        data: {
+          file: `${req.protocol}://${req.get("host")}/uploads/${fileName}`,
+        },
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server Error" });
+  }
+};
+
+// signup
 
 const Signup = async (req, res, next) => {
   const { Name, email, password } = req.body;
@@ -87,6 +152,8 @@ const Signup = async (req, res, next) => {
   // bcrypt.compare(password, existingUser.password);
 };
 
+// login
+
 const Login = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -120,6 +187,7 @@ const Login = async (req, res, next) => {
   res.status(200).json({ user });
 };
 
+// forgot password
 const ForgetPassword = async (req, res, next) => {
   const { email, password } = req.body;
   let user;
@@ -149,8 +217,10 @@ const ForgetPassword = async (req, res, next) => {
 
 module.exports = {
   saveResume,
+  getResume,
   getUsers,
   Signup,
   Login,
   ForgetPassword,
+  uploadPic,
 };
