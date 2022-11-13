@@ -135,10 +135,12 @@ const Signup = async (req, res, next) => {
     );
   }
 
+  let hashPassword = await bcrypt.hash(password, 12);
+
   const newUser = new User({
     Name,
     email,
-    password,
+    password: hashPassword,
   });
 
   try {
@@ -169,15 +171,17 @@ const Login = async (req, res, next) => {
       ErrorHandler("Invalid credentails , could not log you in.", "error", 403)
     );
   }
-  let isValidPassword;
+
+  let isValidPassword = false;
 
   try {
-    isValidPassword = bcrypt.compare(password, user.password);
+    isValidPassword = await bcrypt.compare(password, user.password);
   } catch (error) {
     return next(
-      ErrorHandler("Invalid credentails , could not log you in", "error", 403)
+      ErrorHandler("Invalid credentails , could not log you in", "error", 500)
     );
   }
+  // console.log(isValidPassword);
 
   if (!isValidPassword) {
     return next(ErrorHandler("Invalid Password Or Email ", "error", 403));
@@ -189,7 +193,7 @@ const Login = async (req, res, next) => {
 
 // forgot password
 const ForgetPassword = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, Confirmpassword } = req.body;
   let user;
   try {
     user = await User.findOne({ email: email });
@@ -201,12 +205,17 @@ const ForgetPassword = async (req, res, next) => {
     return next(ErrorHandler("Cannot Find The E-Mail Id", "error", 403));
   }
 
+  if (Confirmpassword !== password) {
+    return next(ErrorHandler("Confirmpassword is not same", "error", 403));
+  }
+
   let UpdatedUser;
   try {
+    let hashPassword = await bcrypt.hash(password, 12);
+
     const filter = { email: email };
-    const update = { password: password };
+    const update = { password: hashPassword };
     UpdatedUser = await User.findOneAndUpdate(filter, update);
-    console.log(UpdatedUser);
     UpdatedUser.save();
   } catch (error) {
     return next(ErrorHandler(error.message, "error", 403));
