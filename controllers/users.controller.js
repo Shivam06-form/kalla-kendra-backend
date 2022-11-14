@@ -1,10 +1,9 @@
 const path = require("path");
 const Resume = require("../models/resume.model");
 const User = require("../models/user.model");
-const { error } = require("console");
 const bcrypt = require("bcryptjs");
 const { ErrorHandler } = require("../middleware/ErrorHander");
-const { isValidObjectId } = require("mongoose");
+const jwt = require("jsonwebtoken");
 
 // get users
 const getUsers = async (req, res, next) => {
@@ -149,7 +148,22 @@ const Signup = async (req, res, next) => {
     return next(ErrorHandler(err, "error", 404));
   }
 
-  res.status(202).json(newUser);
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: newUser.id, email: newUser.email },
+      "supersecreat_dnot_share",
+      {
+        expiresIn: "1h",
+      }
+    );
+  } catch (err) {
+    return next(
+      ErrorHandler("Signing up failed , please try again", "error", 500)
+    );
+  }
+
+  res.status(202).json({ newUser, token: token });
   // to compare password
   // bcrypt.compare(password, existingUser.password);
 };
